@@ -4,16 +4,16 @@ import { useParams, Link } from 'react-router-dom';
 import { useApartments } from '../hooks/useApartments';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { lagosDate } from '../utils/catalogue';
 import toast from 'react-hot-toast';
 import {
   BedDouble, Bath, Maximize2, MapPin, CheckCircle2, ArrowLeft, ChevronLeft, ChevronRight,
 } from 'lucide-react';
-import emailjs from '@emailjs/browser';
 
 export default function ApartmentDetail() {
   const { id } = useParams();
-  const { apartments, loading } = useApartments();
-  const { user, signInWithGoogle } = useAuth();
+  const { apartments, loading, error, demo } = useApartments();
+  const { user } = useAuth();
   const [imgIdx, setImgIdx] = useState(0);
   const [form, setForm] = useState({ checkin: '', checkout: '', guests: 1, notes: '' });
   const [submitting, setSubmitting] = useState(false);
@@ -29,6 +29,8 @@ export default function ApartmentDetail() {
     );
   }
 
+  if (error) return <main style={{ padding: '120px 24px', minHeight: '60vh', textAlign: 'center' }}><p role="alert">Unable to load this apartment. Please try again later.</p><Link to="/apartments">Back to Apartments</Link></main>;
+
   if (!apartment) {
     return (
       <main style={{ paddingTop: 100, textAlign: 'center', minHeight: '60vh' }}>
@@ -38,7 +40,7 @@ export default function ApartmentDetail() {
     );
   }
 
-  const { title, description, bedrooms, bathrooms, size_sqm, price_per_night, location, images, amenities, type } = apartment;
+  const { title, description, bedrooms, bathrooms, size_sqm, price_per_night, location, images, amenities } = apartment;
 
   const nights = form.checkin && form.checkout
     ? Math.max(1, Math.ceil((new Date(form.checkout) - new Date(form.checkin)) / 86400000))
@@ -46,6 +48,10 @@ export default function ApartmentDetail() {
 
   const handleBook = async (e) => {
     e.preventDefault();
+    if (!supabase || demo || apartment.available === false) {
+      toast.error('Booking is unavailable for this listing.');
+      return;
+    }
     if (!user) {
       toast.error('Please sign in to book an apartment');
       return;
@@ -54,6 +60,11 @@ export default function ApartmentDetail() {
       toast.error('Please select check-in and check-out dates');
       return;
     }
+    if (form.checkin < lagosDate()) {
+      toast.error('Check-in cannot be in the past');
+      return;
+    }
+    if (nights > 90) { toast.error('Please choose a stay of no more than 90 nights'); return; }
     if (new Date(form.checkout) <= new Date(form.checkin)) {
       toast.error('Check-out must be after check-in');
       return;
@@ -61,49 +72,19 @@ export default function ApartmentDetail() {
 
     setSubmitting(true);
     try {
-      const booking = {
-        apartment_id: apartment.id,
-        apartment_title: title,
-        user_email: user.email,
-        user_name: user.displayName,
-        checkin_date: form.checkin,
-        checkout_date: form.checkout,
-        guests: form.guests,
-        notes: form.notes,
-        total_price: nights * price_per_night,
-        status: 'pending',
-        created_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase.from('bookings').insert([booking]);
+      const { error } = await supabase.rpc('frensic_request_booking', {
+        p_apartment_id: apartment.id,
+        p_checkin: form.checkin,
+        p_checkout: form.checkout,
+        p_guests: form.guests,
+        p_notes: form.notes,
+      });
       if (error) throw error;
 
-      // Send confirmation email via EmailJS
-      try {
-        await emailjs.send(
-          import.meta.env.VITE_EMAILJS_SERVICE_ID,
-          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-          {
-            to_name: user.displayName,
-            to_email: user.email,
-            apartment_name: title,
-            checkin: form.checkin,
-            checkout: form.checkout,
-            guests: form.guests,
-            total: `₦${(nights * price_per_night).toLocaleString()}`,
-            location,
-          },
-          import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-        );
-      } catch (_emailErr) {
-        // Email failure is non-critical
-        console.warn('Email notification failed:', _emailErr);
-      }
-
       setBooked(true);
-      toast.success('Booking submitted successfully! We will confirm shortly.');
-    } catch (err) {
-      toast.error(err.message || 'Booking failed. Please try again.');
+      toast.success('Your request has been submitted for review.');
+    } catch {
+      toast.error('Unable to submit your request. Please check your dates and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -161,19 +142,19 @@ export default function ApartmentDetail() {
           <ArrowLeft size={14} /> Back to Apartments
         </Link>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 360px', gap: 48, alignItems: 'start' }}>
+        <div className="detail-layout">
           {/* Left */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--gray)', fontSize: '0.875rem', marginBottom: 8 }}>
+            {location && <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--gray)', fontSize: '0.875rem', marginBottom: 8 }}>
               <MapPin size={14} />{location}
-            </div>
+            </div>}
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontWeight: 700, marginBottom: 8 }}>{title}</h1>
             <div style={{ display: 'flex', gap: 24, marginBottom: 24 }}>
               {[
-                { Icon: BedDouble, label: `${bedrooms} Bedroom${bedrooms !== 1 ? 's' : ''}` },
-                { Icon: Bath, label: `${bathrooms} Bathroom${bathrooms !== 1 ? 's' : ''}` },
-                { Icon: Maximize2, label: `${size_sqm} m²` },
-              ].map(({ Icon, label }) => (
+                bedrooms != null && { Icon: BedDouble, label: `${bedrooms} Bedroom${bedrooms !== 1 ? 's' : ''}` },
+                bathrooms != null && { Icon: Bath, label: `${bathrooms} Bathroom${bathrooms !== 1 ? 's' : ''}` },
+                size_sqm != null && { Icon: Maximize2, label: `${size_sqm} m²` },
+              ].filter(Boolean).map(({ Icon, label }) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.875rem', color: 'var(--gray)' }}>
                   <Icon size={15} />{label}
                 </div>
@@ -204,12 +185,14 @@ export default function ApartmentDetail() {
             top: 100,
             border: '1px solid rgba(0,0,0,0.08)',
           }}>
-            {booked ? (
+            {demo || apartment.available === false ? (
+              <div><h3>Booking unavailable</h3><p style={{ color: 'var(--gray)', marginTop: 12 }}>{demo ? 'This is a sample listing and cannot be booked.' : 'This apartment is currently unavailable.'}</p><Link to="/contact" className="btn-primary" style={{ marginTop: 20 }}>Contact us</Link></div>
+            ) : booked ? (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
                 <CheckCircle2 size={48} color="var(--gold)" style={{ margin: '0 auto 16px' }} />
                 <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.3rem', marginBottom: 8 }}>Booking Submitted!</h3>
                 <p style={{ color: 'var(--gray)', fontSize: '0.9rem' }}>
-                  Thank you {user?.displayName}! We will contact you at {user?.email} to confirm your booking.
+                  Thank you {user?.displayName}! Our team will review your request and contact you at {user?.email}.
                 </p>
               </div>
             ) : (
@@ -226,7 +209,7 @@ export default function ApartmentDetail() {
                       <input
                         type="date"
                         required
-                        min={new Date().toISOString().split('T')[0]}
+                        min={lagosDate()}
                         value={form.checkin}
                         onChange={e => setForm(f => ({ ...f, checkin: e.target.value }))}
                         style={inputStyle}
@@ -237,7 +220,7 @@ export default function ApartmentDetail() {
                       <input
                         type="date"
                         required
-                        min={form.checkin || new Date().toISOString().split('T')[0]}
+                        min={form.checkin || lagosDate()}
                         value={form.checkout}
                         onChange={e => setForm(f => ({ ...f, checkout: e.target.value }))}
                         style={inputStyle}
@@ -248,7 +231,7 @@ export default function ApartmentDetail() {
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--gray)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Guests</span>
                     <select value={form.guests} onChange={e => setForm(f => ({ ...f, guests: Number(e.target.value) }))} style={inputStyle}>
-                      {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} Guest{n !== 1 ? 's' : ''}</option>)}
+                      {Array.from({ length: Math.min(apartment.max_guests || 6, 20) }, (_, i) => i + 1).map(n => <option key={n} value={n}>{n} Guest{n !== 1 ? 's' : ''}</option>)}
                     </select>
                   </label>
 
@@ -258,19 +241,20 @@ export default function ApartmentDetail() {
                       value={form.notes}
                       onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                       rows={3}
+                      maxLength={2000}
                       placeholder="Any special requests…"
                       style={{ ...inputStyle, resize: 'vertical' }}
                     />
                   </label>
 
-                  {form.checkin && form.checkout && (
+                  {form.checkin && form.checkout && form.checkout > form.checkin && (
                     <div style={{ background: 'var(--gray-light)', borderRadius: 8, padding: '12px 16px', fontSize: '0.875rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                         <span style={{ color: 'var(--gray)' }}>₦{price_per_night?.toLocaleString()} × {nights} night{nights !== 1 ? 's' : ''}</span>
                         <span>₦{(price_per_night * nights).toLocaleString()}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, borderTop: '1px solid rgba(0,0,0,0.1)', paddingTop: 8 }}>
-                        <span>Total</span>
+                        <span>Estimated total</span>
                         <span style={{ color: 'var(--gold)' }}>₦{(price_per_night * nights).toLocaleString()}</span>
                       </div>
                     </div>
@@ -286,13 +270,13 @@ export default function ApartmentDetail() {
                       {submitting ? 'Submitting…' : 'Request Booking'}
                     </button>
                   ) : (
-                    <button type="button" className="btn-primary" onClick={signInWithGoogle} style={{ width: '100%', justifyContent: 'center' }}>
-                      Sign in to Book
-                    </button>
+                    <Link to={`/sign-in?next=${encodeURIComponent(`/apartments/${id}`)}`} className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                      Sign in to Request
+                    </Link>
                   )}
 
                   <p style={{ color: 'var(--gray)', fontSize: '0.78rem', textAlign: 'center' }}>
-                    You won't be charged yet. We will contact you to confirm.
+                    You won't be charged yet. This is a request, not a confirmed reservation.
                   </p>
                 </form>
               </>

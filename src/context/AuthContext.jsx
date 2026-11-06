@@ -1,36 +1,26 @@
-// src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
-import {
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
-import { auth, googleProvider } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext(null);
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(!!supabase);
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+    if (!supabase) return;
+    let active = true;
+    const update = (session) => {
+      if (!active) return;
+      const u = session?.user;
+      setUser(u ? { ...u, displayName: u.user_metadata?.full_name || u.email, photoURL: u.user_metadata?.avatar_url } : null);
       setLoading(false);
-    });
-    return unsubscribe;
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => update(session));
+    supabase.auth.getSession().then(({ data }) => update(data.session)).catch(() => update(null));
+    return () => { active = false; subscription.unsubscribe(); };
   }, []);
-
-  const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
-  const logout = () => signOut(auth);
-
-  return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const logout = async () => { if (supabase) { const { error } = await supabase.auth.signOut(); if (error) throw error; } };
+  return <AuthContext.Provider value={{ user, loading, logout }}>{children}</AuthContext.Provider>;
 }
-
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');

@@ -1,6 +1,7 @@
 // src/hooks/useApartments.js
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { mapRoom } from '../utils/catalogue';
 
 export function useApartments() {
   const [apartments, setApartments] = useState([]);
@@ -8,26 +9,28 @@ export function useApartments() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let active = true;
     async function fetchApartments() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('apartments')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        setError(error.message);
-        // Fall back to static data if Supabase not configured
+      if (!supabase) {
         setApartments(staticApartments);
-      } else {
-        setApartments(data && data.length > 0 ? data : staticApartments);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+      try {
+        const { data, error } = await supabase.from('rooms').select('id,name,description,price_per_night,bedrooms,size_sqm,max_guests,amenities,image_url,gallery,featured,display_order').order('display_order');
+        if (error) throw error;
+        if (active) setApartments((data || []).map(mapRoom));
+      } catch (err) {
+        if (active) setError(err.message || 'Unable to load apartments.');
+      } finally {
+        if (active) setLoading(false);
+      }
     }
     fetchApartments();
+    return () => { active = false; };
   }, []);
 
-  return { apartments, loading, error };
+  return { apartments, loading, error, demo: !supabase };
 }
 
 export const staticApartments = [

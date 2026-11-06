@@ -165,3 +165,22 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+.notice { padding: 14px 18px; margin-bottom: 20px; background: #f8f1df; color: #55441c; border-radius: 8px; }
+.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 48px; align-items: start; }
+@media (max-width: 768px) { .detail-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+
+.signin-page { min-height: 75vh; background: var(--gray-light); display: grid; place-items: center; padding: 120px 24px 70px; }
+.signin-card { width: min(100%, 460px); background: white; padding: 36px; border-radius: 16px; box-shadow: var(--shadow); }
+.signin-card h1 { font-family: var(--font-serif); font-size: 2rem; margin-bottom: 12px; }
+.signin-card p { color: var(--gray); margin-bottom: 24px; }
+.signin-card form { display: flex; flex-direction: column; gap: 12px; }
+.signin-card form p { margin-bottom: 4px; }
+.signin-card label { font-weight: 600; font-size: .9rem; }
+.signin-card input { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font: inherit; min-width: 0; }
+.signin-card button { justify-content: center; }
+.signin-card .signin-eyebrow { color: #95721d; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; font-size: .75rem; margin-bottom: 8px; }
+.signin-card .signin-error { color: #a32020; margin: 0; }
+.signin-link, .signin-back { display: inline-block; background: none; color: #725410; text-decoration: underline; margin-top: 24px; }
+button:disabled { cursor: not-allowed; opacity: .65; }
+@media (max-width: 600px) { .signin-card { padding: 24px; } }

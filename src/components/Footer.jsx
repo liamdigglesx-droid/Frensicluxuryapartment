@@ -1,6 +1,5 @@
 // src/components/Footer.jsx
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Instagram, Facebook, Twitter } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -31,23 +30,7 @@ export default function Footer() {
               Experience premium serviced apartments in the heart of Abuja, Nigeria.
               Your comfort and elegance, guaranteed.
             </p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              {[Instagram, Facebook, Twitter].map((Icon, i) => (
-                <a key={i} href="#" style={{
-                  width: 36, height: 36,
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'rgba(255,255,255,0.7)',
-                  transition: 'all 0.2s',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--gold)'; e.currentTarget.style.color = 'var(--gold)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
-                >
-                  <Icon size={16} />
-                </a>
-              ))}
-            </div>
+
           </div>
 
           {/* Quick Links */}
@@ -73,27 +56,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h4 style={{ color: 'var(--white)', fontWeight: 600, marginBottom: '16px', fontSize: '0.95rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              Contact Us
-            </h4>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.9rem' }}>
-                <MapPin size={16} style={{ color: 'var(--gold)', marginTop: 2, flexShrink: 0 }} />
-                <span>Wuse 2, Abuja, FCT, Nigeria</span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem' }}>
-                <Phone size={16} style={{ color: 'var(--gold)', flexShrink: 0 }} />
-                <a href="tel:+2348000000000" style={{ color: 'inherit' }}>+234 800 000 0000</a>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem' }}>
-                <Mail size={16} style={{ color: 'var(--gold)', flexShrink: 0 }} />
-                <a href="mailto:info@frensicluxuryapartment.com.ng" style={{ color: 'inherit' }}>
-                  info@frensicluxuryapartment.com.ng
-                </a>
-              </li>
-            </ul>
+            <h4 style={{ color: 'var(--white)', marginBottom: 16 }}>Get in touch</h4>
+            <p style={{ marginBottom: 12 }}>Questions about your stay?</p>
+            <Link to="/contact" style={{ color: 'var(--gold)' }}>Send an enquiry</Link>
           </div>
         </div>
 

@@ -4,20 +4,20 @@ import { useApartments } from '../hooks/useApartments';
 import ApartmentCard from '../components/ApartmentCard';
 import { Search, SlidersHorizontal } from 'lucide-react';
 
-const TYPES = ['All', 'Studio', '1 Bedroom', '2 Bedroom', 'Penthouse'];
 
 export default function Apartments() {
-  const { apartments, loading } = useApartments();
+  const { apartments, loading, error, demo } = useApartments();
   const [search, setSearch] = useState('');
   const [type, setType] = useState('All');
-  const [maxPrice, setMaxPrice] = useState(200000);
+  const [maxPrice, setMaxPrice] = useState('');
+  const types = ['All', ...new Set(apartments.map(a => a.type).filter(Boolean))];
 
   const filtered = apartments.filter((a) => {
     const matchSearch =
       a.title.toLowerCase().includes(search.toLowerCase()) ||
       a.location.toLowerCase().includes(search.toLowerCase());
     const matchType = type === 'All' || a.type === type;
-    const matchPrice = a.price_per_night <= maxPrice;
+    const matchPrice = (!maxPrice || a.price_per_night <= Number(maxPrice));
     return matchSearch && matchType && matchPrice;
   });
 
@@ -30,6 +30,8 @@ export default function Apartments() {
         color: 'var(--white)',
       }}>
         <div className="container">
+          {demo && <p className="notice">These are sample apartments for demonstration, not bookable listings.</p>}
+          {error && <p className="notice" role="alert">Unable to load apartments. Please try again later.</p>}
           <p style={{ color: 'var(--gold)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem', marginBottom: 8 }}>
             Our Collection
           </p>
@@ -68,7 +70,7 @@ export default function Apartments() {
 
             {/* Type filter */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {TYPES.map(t => (
+              {types.map(t => (
                 <button
                   key={t}
                   onClick={() => setType(t)}
@@ -93,16 +95,11 @@ export default function Apartments() {
             {/* Price filter */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.875rem', color: 'var(--gray)' }}>
               <SlidersHorizontal size={16} />
-              <span style={{ whiteSpace: 'nowrap' }}>Max: ₦{maxPrice.toLocaleString()}/night</span>
-              <input
-                type="range"
-                min={20000}
-                max={200000}
-                step={5000}
-                value={maxPrice}
-                onChange={e => setMaxPrice(Number(e.target.value))}
-                style={{ width: 120, accentColor: 'var(--gold)' }}
-              />
+              <label>Max ₦/night <input
+                type="number" min="0" step="1000" value={maxPrice}
+                onChange={e => setMaxPrice(e.target.value)} placeholder="Any price"
+                style={{ width: 130, padding: 8, border: '1px solid #ccc', borderRadius: 8 }}
+              /></label>
             </div>
           </div>
         </div>

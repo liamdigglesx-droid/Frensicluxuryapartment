@@ -3,49 +3,12 @@ import { Link } from 'react-router-dom';
 import { useApartments } from '../hooks/useApartments';
 import ApartmentCard from '../components/ApartmentCard';
 import {
-  ShieldCheck,
-  Wifi,
-  Dumbbell,
-  Waves,
-  Car,
-  UtensilsCrossed,
-  Star,
   ArrowRight,
   Phone,
 } from 'lucide-react';
 
-const amenities = [
-  { icon: Wifi, label: 'High-Speed WiFi', desc: 'Fibre broadband in every apartment' },
-  { icon: Waves, label: 'Swimming Pool', desc: 'Temperature-controlled rooftop pool' },
-  { icon: Dumbbell, label: 'Fitness Centre', desc: 'State-of-the-art gym facilities' },
-  { icon: ShieldCheck, label: '24/7 Security', desc: 'Manned gates & CCTV surveillance' },
-  { icon: Car, label: 'Secure Parking', desc: 'Ample covered parking spaces' },
-  { icon: UtensilsCrossed, label: 'In-Room Dining', desc: 'Chef-prepared meals on request' },
-];
-
-const testimonials = [
-  {
-    name: 'Adaeze O.',
-    role: 'Business Executive, Lagos',
-    text: 'Absolutely stunning apartment! The service was impeccable and the location in Maitama was perfect for my meetings. Will definitely return.',
-    rating: 5,
-  },
-  {
-    name: 'Chukwuemeka P.',
-    role: 'Government Official, Abuja',
-    text: 'Frensic Luxury provided exactly what I needed — a peaceful, elegant space after long days. The penthouse views are breathtaking.',
-    rating: 5,
-  },
-  {
-    name: 'Fatima A.',
-    role: 'Corporate Traveller',
-    text: 'Best serviced apartment in Abuja by far. Clean, modern, and the staff go above and beyond. The booking process was smooth and fast.',
-    rating: 5,
-  },
-];
-
 export default function Home() {
-  const { apartments, loading } = useApartments();
+  const { apartments, loading, error, demo } = useApartments();
   const featured = apartments.filter((a) => a.featured).slice(0, 3);
 
   return (
@@ -94,39 +57,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Stats Bar */}
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: 'rgba(201,168,76,0.95)',
-          backdropFilter: 'blur(8px)',
-        }}>
-          <div className="container">
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-              padding: '20px 0',
-              textAlign: 'center',
-              gap: 16,
-            }}>
-              {[
-                { value: '200+', label: 'Happy Guests' },
-                { value: '4', label: 'Apartment Types' },
-                { value: '24/7', label: 'Concierge Service' },
-                { value: '5★', label: 'Average Rating' },
-              ].map(({ value, label }) => (
-                <div key={label}>
-                  <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700, color: 'var(--dark)' }}>
-                    {value}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'rgba(0,0,0,0.7)' }}>{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Featured Apartments */}
@@ -140,6 +70,8 @@ export default function Home() {
             Hand-picked residences offering the finest in luxury short-let living
           </p>
 
+          {demo && <p className="notice">Explore sample apartments below. These listings are for demonstration only.</p>}
+          {error && <p className="notice" role="alert">Unable to load apartments. Please try again later.</p>}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--gray)' }}>
               Loading apartments…
@@ -156,50 +88,6 @@ export default function Home() {
             <Link to="/apartments" className="btn-primary">
               View All Apartments <ArrowRight size={16} />
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Amenities */}
-      <section className="section">
-        <div className="container">
-          <p style={{ color: 'var(--gold)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem', marginBottom: 8 }}>
-            World-Class Facilities
-          </p>
-          <h2 className="section-title">Amenities & Services</h2>
-          <p className="section-subtitle">
-            Every comfort you need, thoughtfully provided
-          </p>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 24,
-          }}>
-            {amenities.map(({ icon: Icon, label, desc }) => (
-              <div key={label} style={{
-                padding: '28px',
-                border: '1px solid rgba(0,0,0,0.08)',
-                borderRadius: 12,
-                transition: 'box-shadow 0.2s, border-color 0.2s',
-                cursor: 'default',
-              }}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow)'; e.currentTarget.style.borderColor = 'var(--gold)'; }}
-                onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; }}
-              >
-                <div style={{
-                  width: 48, height: 48,
-                  background: 'rgba(201,168,76,0.1)',
-                  borderRadius: 10,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: 16,
-                }}>
-                  <Icon size={22} color="var(--gold)" />
-                </div>
-                <h3 style={{ fontWeight: 600, marginBottom: 6 }}>{label}</h3>
-                <p style={{ color: 'var(--gray)', fontSize: '0.875rem' }}>{desc}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -224,10 +112,8 @@ export default function Home() {
             </p>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
-                'Fully furnished with premium furniture and fittings',
-                'Dedicated account manager and concierge',
                 'Flexible short-let and long-stay options',
-                'Instant booking with secure online payment',
+                'Booking requests reviewed by our team',
               ].map((item) => (
                 <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, color: 'rgba(255,255,255,0.82)', fontSize: '0.92rem' }}>
                   <span style={{ color: 'var(--gold)', fontSize: '1rem', flexShrink: 0 }}>✓</span>
@@ -245,41 +131,6 @@ export default function Home() {
               alt="Luxury apartment interior"
               style={{ borderRadius: 16, boxShadow: 'var(--shadow-lg)', width: '100%' }}
             />
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="section" style={{ background: 'var(--gray-light)' }}>
-        <div className="container">
-          <p style={{ color: 'var(--gold)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem', marginBottom: 8 }}>
-            Guest Reviews
-          </p>
-          <h2 className="section-title">What Our Guests Say</h2>
-          <p className="section-subtitle">Real experiences from our valued guests</p>
-
-          <div className="grid-3">
-            {testimonials.map((t) => (
-              <div key={t.name} style={{
-                background: 'var(--white)',
-                borderRadius: 12,
-                padding: 32,
-                boxShadow: 'var(--shadow)',
-              }}>
-                <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} size={16} fill="var(--gold)" color="var(--gold)" />
-                  ))}
-                </div>
-                <p style={{ color: 'var(--gray)', lineHeight: 1.7, marginBottom: 20, fontStyle: 'italic', fontSize: '0.925rem' }}>
-                  "{t.text}"
-                </p>
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--dark)' }}>{t.name}</div>
-                  <div style={{ color: 'var(--gray)', fontSize: '0.82rem' }}>{t.role}</div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

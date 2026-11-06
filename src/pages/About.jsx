@@ -6,29 +6,9 @@ const values = [
   { icon: Award, title: 'Excellence', desc: 'We maintain the highest standards in furnishing, cleanliness, and service delivery in every apartment.' },
   { icon: Heart, title: 'Hospitality', desc: 'Genuine Nigerian warmth and hospitality is at the core of everything we do for our guests.' },
   { icon: Users, title: 'Community', desc: 'We value long-term relationships with our guests, corporate clients, and local partners.' },
-  { icon: Shield, title: 'Trust & Safety', desc: '24/7 security, verified reviews, and transparent pricing — your safety is our priority.' },
+  { icon: Shield, title: 'Trust & Safety', desc: 'We aim to provide clear information and a thoughtful guest experience.' },
 ];
 
-const team = [
-  {
-    name: 'Amaka Okonkwo',
-    role: 'Founder & CEO',
-    img: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80',
-    bio: 'With over 15 years in Nigerian real estate, Amaka founded Frensic to redefine luxury short-let living in Abuja.',
-  },
-  {
-    name: 'Emeka Nwosu',
-    role: 'Head of Operations',
-    img: 'https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=400&q=80',
-    bio: 'Emeka ensures every apartment is immaculately maintained and that guests receive seamless service from check-in to check-out.',
-  },
-  {
-    name: 'Chinaza Ibrahim',
-    role: 'Guest Experience Manager',
-    img: 'https://images.unsplash.com/photo-1598550874175-4d0ef436c909?w=400&q=80',
-    bio: 'Chinaza\'s passion is creating unforgettable stays, handling all guest communications and special requests with care.',
-  },
-];
 
 export default function About() {
   return (
@@ -67,13 +47,7 @@ export default function About() {
               and families the finest short-let and serviced apartment experience in Nigeria's Federal Capital Territory.
             </p>
             <p style={{ color: 'var(--gray)', lineHeight: 1.85, marginBottom: 24 }}>
-              Located in some of Abuja's most prestigious neighbourhoods — Wuse 2, Maitama, Asokoro, and Garki —
-              our apartments combine thoughtfully designed interiors with hotel-grade amenities and the privacy of a home.
-            </p>
-            <p style={{ color: 'var(--gray)', lineHeight: 1.85, marginBottom: 32 }}>
-              Since our founding, we have hosted over 200 guests ranging from visiting dignitaries and corporate teams to
-              families relocating to Abuja. Each guest receives personalised attention and a commitment to excellence that
-              we are proud to stand behind.
+              Explore the collection for details on each apartment, including its location and amenities.
             </p>
             <Link to="/apartments" className="btn-primary">
               Explore Our Apartments <ArrowRight size={16} />
@@ -117,30 +91,6 @@ export default function About() {
                 </div>
                 <h3 style={{ fontWeight: 700, marginBottom: 8 }}>{title}</h3>
                 <p style={{ color: 'var(--gray)', fontSize: '0.875rem', lineHeight: 1.7 }}>{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team */}
-      <section className="section">
-        <div className="container">
-          <p style={{ color: 'var(--gold)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem', marginBottom: 8 }}>
-            The People Behind the Experience
-          </p>
-          <h2 className="section-title">Meet Our Team</h2>
-          <p className="section-subtitle">Dedicated professionals committed to making your stay exceptional</p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 32 }}>
-            {team.map(({ name, role, img, bio }) => (
-              <div key={name} className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <img src={img} alt={name} style={{ width: '100%', height: 260, objectFit: 'cover', objectPosition: 'top' }} />
-                <div style={{ padding: '24px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', fontWeight: 700, marginBottom: 4 }}>{name}</h3>
-                  <p style={{ color: 'var(--gold)', fontSize: '0.85rem', fontWeight: 600, marginBottom: 12 }}>{role}</p>
-                  <p style={{ color: 'var(--gray)', fontSize: '0.875rem', lineHeight: 1.65 }}>{bio}</p>
-                </div>
               </div>
             ))}
           </div>

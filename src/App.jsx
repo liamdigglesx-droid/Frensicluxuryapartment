@@ -9,6 +9,7 @@ import Apartments from './pages/Apartments';
 import ApartmentDetail from './pages/ApartmentDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import SignIn from './pages/SignIn';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/apartments/:id" element={<ApartmentDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/sign-in" element={<SignIn />} />
           <Route path="*" element={
             <main style={{ paddingTop: 120, textAlign: 'center', minHeight: '60vh' }}>
               <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '3rem', marginBottom: 16 }}>404</h1>
